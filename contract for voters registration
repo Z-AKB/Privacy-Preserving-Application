@@ -1,0 +1,24 @@
+pragma solidity ^0.8.0;
+
+contract VoterRegistration {
+    struct Voter {
+        bytes32 encryptedIdentity;
+        bool registered;
+    }
+
+    mapping (address => Voter) public voters;
+
+    function registerVoter(bytes32 _encryptedIdentity) public {
+        require(!voters[msg.sender].registered, "Voter already registered");
+        voters[msg.sender].encryptedIdentity = _encryptedIdentity;
+        voters[msg.sender].registered = true;
+    }
+
+    function verifyVoter(address _voterAddress) public view returns (bool) {
+        return voters[_voterAddress].registered;
+    }
+
+    function encryptIdentity(string memory _identity) public pure returns (bytes32) {
+        // Implement encryption logic here (e.g., using hash functions or encryption libraries)
+    }
+}
