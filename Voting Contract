@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "VoterRegistration.sol";
+
+contract Voting {
+    struct Candidate {
+        uint id;           
+        string name;    
+        uint voteCount;   
+    }
+
+    // Instance of the VoterRegistration contract to verify voter registration
+    VoterRegistration voterRegistration;
+
+    mapping(uint => Candidate) public candidates;
+
+    // Counter for the total number of candidates
+    uint public candidatesCount;
+
+    mapping(address => bool) public hasVoted;
+
+    event VotedEvent(uint indexed candidateId);
+
+    // Constructor that initializes the contract with the address of the VoterRegistration contract
+    // and adds initial candidates
+    constructor(address _voterRegistration) {
+        // Set the VoterRegistration contract instance
+        voterRegistration = VoterRegistration(_voterRegistration);
+        
+        // Adding two candidates to the election
+        addCandidate("Candidate 1");
+        addCandidate("Candidate 2");
+    }
+
+    // Private function to add a new candidate to the election
+    function addCandidate(string memory _name) private {
+        candidatesCount++;  // Increment the candidate count
+        candidates[candidatesCount] = Candidate(candidatesCount, _name, 0); // Create a new candidate and add to the mapping
+    }
+
+    // Function to cast a vote for a candidate
+    function vote(uint _candidateId) public {
+        // Ensure the caller is a registered voter
+        require(voterRegistration.isRegistered(msg.sender), "You are not a registered voter.");
+        
+        // Ensure the caller has not already voted
+        require(!hasVoted[msg.sender], "You have already voted.");
+        
+        // Ensure the candidate ID is valid (within the range of existing candidates)
+        require(_candidateId > 0 && _candidateId <= candidatesCount, "Invalid candidate ID.");
+
+        // Mark the caller's address as having voted
+        hasVoted[msg.sender] = true;
+        
+        // Increment the vote count for the chosen candidate
+        candidates[_candidateId].voteCount++;
+
+        // Emit an event to log that a vote has been cast
+        emit VotedEvent(_candidateId);
+    }
+
+    // Function to get the number of votes a candidate has received
+    function getVoteCount(uint _candidateId) public view returns (uint) {
+        // Ensure the candidate ID is valid
+        require(_candidateId > 0 && _candidateId <= candidatesCount, "Invalid candidate ID.");
+        
+        // Return the vote count for the specified candidate
+        return candidates[_candidateId].voteCount;
+    }
+}
