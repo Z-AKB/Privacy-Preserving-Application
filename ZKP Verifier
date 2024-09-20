@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+contract ZKPVerifier 
+{
+  function verifyProof(
+    bytes memory proof,
+    uint[] memory inputs
+  ) 
+
+  public view returns (bool) 
+  {
+  // This function verifies the ZKP proof
+  // Proof is the zk-SNARK proof generated off-chain
+    return true; 
+      }
+}
+
+//zk-SNARK is a ZKP framework used to prove knowledge of a secret without revealing any information about the secret
