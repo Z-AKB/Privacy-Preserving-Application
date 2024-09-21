@@ -1,29 +1,42 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract UserRegistration {
-
+contract UserRegistrationWithZKP {
     struct User {
         bool isRegistered;
         bytes32 commitment; // Hash or commitment of user identity
     }
 
+// Address of the zk-SNARK verifier contract
     mapping(address => User) public users;
+    ZKPVerifier public verifier; 
 
     event UserRegistered(address indexed user, bytes32 commitment);
 
-    // Register a new user with a hashed commitment
-    function registerUser(bytes32 _commitment) public {
+    constructor(address _verifier) {
+        verifier = ZKPVerifier(_verifier); // Link to zk-SNARK verifier
+    }
+
+    // Register a new user with a ZKP proof
+    function registerUser(
+        bytes32 _commitment,
+        bytes memory _proof,
+        uint[] memory _publicInputs
+    ) public {
         require(!users[msg.sender].isRegistered, "User already registered");
-        
-        // Store the user's commitment
+
+        // Verifies the ZKP proof using the verifier contract
+        bool validProof = verifier.verifyProof(_proof, _publicInputs);
+        require(validProof, "Invalid ZKP proof");
+
+        // Stores the user's commitment
         users[msg.sender] = User(true, _commitment);
 
-        // Emit an event for transparency
+        // Emits an event for transparency
         emit UserRegistered(msg.sender, _commitment);
     }
 
-    // Simple check if a user is registered
+    // checks if a user is registered
     function isUserRegistered(address _user) public view returns (bool) {
         return users[_user].isRegistered;
     }
